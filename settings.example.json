@@ -1,0 +1,14 @@
+{
+  "sources": [
+    { "path": "/path/to/libraryA.zip", "tag": "a" },
+    { "path": "/path/to/libraryB.zip", "tag": "b" }
+  ],
+  "out": "events.jsonl",
+  "prompts": "prompts.md",
+  "resident": "resident.md",
+  "bump": "bump.json",
+  "resident_budget": 30000,
+  "share_user": 0.55,
+  "share_assistant": 0.25,
+  "tz_offset_hours": 8
+}

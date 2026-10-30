@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# 你跑出来的东西，别提交
+events.jsonl
+resident.md
+bump.json
+settings.json
+channel.jsonl
+corpus.jsonl
+*.local.md
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
