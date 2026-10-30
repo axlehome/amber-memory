@@ -40,6 +40,74 @@ python3 extract.py --source examples/sample-library.zip --tag demo --out /tmp/de
 
 ---
 
+## 你拿到三样东西
+
+**`events.jsonl`** — 每条一句话，打好标。一行一条：
+
+````
+{"src":"a","seq":8,"dt":"2026-10-15 13:42:10","role":"user","text":"鱼",
+ "len":1,"topic":"日常","noise":"太短","arousal":0.0,"heavy":0.0,"human":0.6,"wake":0.0}
+````
+
+`noise` 空 = 可召回；`wake` 是「值不值得记住」的总分。
+
+**`resident.md`** — 固定大小的常驻集：
+
+````
+# 常驻
+
+## 对方说过的话
+- `01-12 08:22` 记账那笔我忘了记，月底对不上。
+- `01-05 10:58` 膝盖有点疼，是不是跑步太多了。
+
+## 我说过的话
+- `01-05 12:03` 先别急着换，用两天看看。
+````
+
+**`recall.py` 的输出** — 问一句，捞几条：
+
+````
+【可能相关的原话】
+- 01-06 23:50 对方：膝盖有点疼，是不是跑步太多了
+- 01-07 14:59 对方：膝盖疼是不是该歇两天
+````
+
+---
+
+## 生成完怎么用
+
+两种，可以只选一种：
+
+**一、把 `resident.md` 塞进提示词。** 最省事。DSH 用 `~/.dsh/AGENTS.md`，每轮开头自动进上下文；其他 harness 用系统提示词或等价的工作区指令文件。
+
+**二、接成一个端点。** 每次请求拼 `system + 常驻 + 检索 + 这一句`，不写会话：
+
+````
+system: 你是……
+user:   <resident.md>
+        <recall 结果>
+        【他刚才说】
+        <这一句>
+````
+
+第二种能把 token 卡死在一个数上（实测 1.6 万，连问五轮不涨），代价是每轮不带历史——为什么可以接受，见 [`docs/不做什么.md`](docs/不做什么.md)。
+
+---
+
+## 参数
+
+| 字段 | 默认 | 是什么 |
+|---|---|---|
+| `resident_budget` | 30000 | 常驻的字数上限。一页纸能装多少 |
+| `share_user` | 0.55 | 常驻里对方的话占多少（经历比回应值钱） |
+| `share_assistant` | 0.25 | 我的话占多少 |
+| `tz_offset_hours` | 8 | 时区 |
+| `prompts` | prompts.md | 你的规矩，整段放进常驻最前面 |
+
+`prompts.md` 从 [`prompts.example.md`](prompts.example.md) 抄一份改就行。改它不用重跑 extract。
+
+---
+
 ## 实测
 
 在一份 **5000 条 / 13.4 万字** 的语料上跑——`examples/gen-corpus.py` 生成，八个家常主题（做饭、养花、修车、记账、跑步、学英语、旅行、工作），固定种子，谁跑都一样：
@@ -87,6 +155,14 @@ python3 extract.py --source /tmp/c.jsonl --tag demo --out /tmp/e.jsonl
 # 写一份 settings.json 指向 /tmp/e.jsonl，然后：
 python3 pick.py --config /tmp/s.json
 python3 recall.py --config /tmp/s.json "膝盖疼怎么办"
+```
+
+`/tmp/s.json` 长这样：
+
+```json
+{"out": "/tmp/e.jsonl", "resident": "/tmp/r.md",
+ "bump": "/tmp/b.json", "resident_budget": 30000,
+ "share_user": 0.55, "share_assistant": 0.25, "tz_offset_hours": 8}
 ```
 
 三件事要自己对一遍：
