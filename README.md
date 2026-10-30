@@ -6,6 +6,11 @@
 
 > 琥珀不是「不会忘」。它是把活的东西封起来：能带走、能看，但不再活。
 
+<sub>**English** — amber compresses a long chat log into a fixed-size "resident" memory plus a tiny
+idf retriever, so every turn carries a constant ~16k tokens instead of the whole history. Rules only:
+no model calls, no embeddings, no network, no dependencies. Built for DSH; other harnesses convert
+their logs to a plain `{"role","text","time"}` jsonl first.</sub>
+
 ---
 
 ## 它解决什么
@@ -37,6 +42,48 @@ python3 extract.py --source examples/sample-library.zip --tag demo --out /tmp/de
 ```
 
 `examples/sample-library.zip` 是 49 条编出来的对话（一个学做面包的人），跑得通三步。
+
+---
+
+## 数据从哪来
+
+**DSH 用户**：设置里导出会话，得到一个 zip，直接 `--source 那个.zip`。不用解压。
+
+**不是 DSH**：任何 `.jsonl` 都行，一行一条：
+
+```json
+{"role": "user", "text": "……", "time": 1792042930817}
+```
+
+`role` 认 `user` / `me` / `human` 和 `assistant` / `he`。`time` 是毫秒，没有也行——那就没有时间，常驻里会少一列日期。
+
+完整字段表在 `extract.py` 的 `rows.append(...)` 那一处——总共十二个字段，那就是全部。
+
+---
+
+## 一条命令跑到底
+
+散着跑容易错，复制这段从头到尾：
+
+```bash
+# 1. 抽
+python3 extract.py --source my.jsonl --tag me --out events.jsonl
+
+# 2. 写配置（所有相对路径都相对这个文件所在的目录）
+cat > settings.json <<'EOF'
+{"out": "events.jsonl", "resident": "resident.md", "bump": "bump.json",
+ "resident_budget": 30000, "share_user": 0.55, "share_assistant": 0.25,
+ "tz_offset_hours": 8}
+EOF
+
+# 3. 挑常驻
+python3 pick.py
+
+# 4. 检索
+python3 recall.py "我问过什么"
+```
+
+`prompts.md` 是可选的：没有就不加「规矩」那一段，三步照样跑。
 
 ---
 
@@ -92,6 +139,8 @@ user:   <resident.md>
 
 第二种能把 token 卡死在一个数上（实测 1.6 万，连问五轮不涨），代价是每轮不带历史——为什么可以接受，见 [`docs/不做什么.md`](docs/不做什么.md)。
 
+注意：`recall.py` 只**打印**结果，不会自动拼进请求。拼装这一步在调用方。
+
 ---
 
 ## 参数
@@ -125,7 +174,7 @@ user:   <resident.md>
 
 | | 带全历史 | 常驻 + 检索 |
 |---|---|---|
-| 每轮 token | 185,953（一天涨一万四） | 16,203（连问五轮不涨） |
+| 每轮 token | 十几万，一天涨一万四 | 1.6 万，连问五轮不涨 |
 | 首字延迟 | 十几秒 | 1.5–2.5 秒 |
 
 省 91%。但省下来的大头是缓存——常驻集不变，缓存就一直命中；改一次常驻，缓存全作废。
@@ -175,7 +224,7 @@ python3 recall.py --config /tmp/s.json "膝盖疼怎么办"
 
 ## 依赖
 
-Python 3.10+。标准库。没有 pip install 这一步。
+Python 3.8+。标准库。没有 `pip install` 这一步。
 
 接进 DSH 的做法：把常驻 + 检索包成一个 OpenAI 兼容端点，新开一条通道，请求时拼 `system + 常驻 + 检索 + 这一句`，不写会话。
 

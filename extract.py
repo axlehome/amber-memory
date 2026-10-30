@@ -226,7 +226,10 @@ def main():
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
-    cfg = load_settings(Path(a.config))
+    cfg_path = Path(a.config).expanduser()
+    cfg = load_settings(cfg_path)
+    # 所有相对路径都相对 settings.json 所在目录，跟 pick/recall 保持一致
+    cfg_base = cfg_path.resolve().parent if cfg_path.exists() else HERE
 
     if a.source:
         tags = (a.tag + [Path(x).stem for x in a.source])[:len(a.source)]
@@ -252,6 +255,8 @@ def main():
     rows, by_src = [], {}
     for s in sources:
         p = Path(s["path"]).expanduser()
+        if not p.is_absolute():
+            p = cfg_base / p
         if not p.exists():
             print(f"[skip] {p} 不存在", file=sys.stderr)
             continue
@@ -276,6 +281,8 @@ def main():
 
     rows.sort(key=lambda r: (r["time"], r["src"], r["seq"]))
     out = Path(a.out or cfg.get("out", "events.jsonl"))
+    if not out.is_absolute():
+        out = cfg_base / out
     with out.open("w", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
