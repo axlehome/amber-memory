@@ -22,3 +22,5 @@ jobs:
         run: python tests/smoke.py
         env:
           PYTHONIOENCODING: utf-8
+      - name: 边界回归（BOM / 英文 / null / 生成器量级）
+        run: python tests/test_edges.py

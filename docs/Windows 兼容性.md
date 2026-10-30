@@ -22,6 +22,8 @@ python tests/smoke.py
 
 三平台都应输出 `[ok] 三步跑通：300 条 → 常驻 1,576 字`，exit 0。
 
+边界回归：`python tests/test_edges.py`（BOM 首行、纯英文、null 时间/seq、生成器量级）。
+
 CI 建议用矩阵跑 `tests/smoke.py`：ubuntu / windows / macos 各一遍，并额外跑一次 `PYTHONIOENCODING=utf-8`。
 
 ## 注意
