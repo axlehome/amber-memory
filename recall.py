@@ -14,6 +14,7 @@ import argparse
 import json
 import math
 import re
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -23,9 +24,23 @@ STOP = set("的了是我你他吗呢吧啊呀嘛哦就都也还很这那个们�
 
 
 def terms(q: str):
-    q = re.sub(r"[\s\W_]+", "", q)
-    ts = {q[i:i + 2] for i in range(len(q) - 1)} if len(q) > 1 else {q}
-    return {t for t in ts if CJK.search(t) and not (set(t) <= STOP)}
+    """中英分开切：中文段切二元组，英文词整体收。
+
+    先拼成 `knees疼怎么办` 再切二元组会切出 `s疼` 这种不存在的词，
+    纯英文查询则永远 0 命中。所以按语言分段处理。
+    """
+    out = set()
+    for seg in re.findall(r"[\u4e00-\u9fff]+", q):
+        if len(seg) > 1:
+            for i in range(len(seg) - 1):
+                t = seg[i:i + 2]
+                if not (set(t) <= STOP):
+                    out.add(t)
+        else:
+            out.add(seg)
+    for m in re.finditer(r"[A-Za-z]{2,}", q):
+        out.add(m.group(0).lower())
+    return out
 
 
 class Index:
@@ -105,8 +120,10 @@ def main():
 
     if a.json:
         print(json.dumps(hits, ensure_ascii=False, indent=2))
-    else:
+    elif hits:
         print(block(hits))
+    else:
+        print("没有找到相关的原话。", file=sys.stderr)
 
 
 if __name__ == "__main__":

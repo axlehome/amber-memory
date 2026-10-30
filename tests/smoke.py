@@ -17,7 +17,8 @@ PY = sys.executable
 
 
 def run(*args, **kw):
-    r = subprocess.run([PY, *args], cwd=ROOT, capture_output=True, text=True, **kw)
+    r = subprocess.run([PY, *args], cwd=ROOT, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", **kw)
     if r.returncode != 0:
         print(f"[FAIL] {' '.join(args)}\n{(r.stderr or r.stdout)[-800:]}")
         sys.exit(1)

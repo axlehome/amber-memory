@@ -127,6 +127,10 @@ python3 recall.py "我问过什么"
 
 **一、把 `resident.md` 塞进提示词。** 最省事。DSH 用 `~/.dsh/AGENTS.md`，每轮开头自动进上下文；其他 harness 用系统提示词或等价的工作区指令文件。
 
+> ⚠️ 常驻里的句子来自对话原文。贴进 `AGENTS.md` 等于把**用户内容提升成系统级指令**，对所有会话长期生效。只在自己的机器上、只对可信的数据这么做。撤销办法：删掉那段。
+>
+> 更安全的做法是第二种（端点模式）——它不改进程的指令文件，删掉服务就干净了。
+
 **二、接成一个端点。** 每次请求拼 `system + 常驻 + 检索 + 这一句`，不写会话：
 
 ````
@@ -268,11 +272,13 @@ wake = (0.6 × arousal + 0.4 × heavy) × topic_prior[topic] × role_weight[role
 | 指标 | 数值 |
 |---|---|
 | 抽取 | 5000 条，打标完成 |
-| 常驻集 | 18,964 字 / 约 1.2 万 token |
+| 常驻集 | 7,554 字 / 约 5,000 token |
 | 检索 | 每轮多几百 token |
-| 离线耗时 | extract 0.44s / pick 0.21s / recall 0.27s，合计不到 1 秒 |
+| 离线耗时 | extract 0.32s / pick 0.18s / recall 0.24s，合计不到 1 秒 |
 
-同一套参数在更大语料上跑，常驻稳定在两万字上下。那份语料的分布（话题、噪声、召回率，不含任何原话）见 [`docs/分布.md`](docs/分布.md)——里面有一个数解释了 `topic_prior` 为什么这么设。
+同一套参数在更大语料上跑，常驻稳定在两万字上下。
+
+**为什么差这么多**：合成语料比真实记录稀疏——五千条平均 18 字，跑出来的常驻只装满四分之一预算。真实记录句子更长、信息更密，同样的条数能装到两万字。所以常驻的大小取决于**原话的信息密度**，不是条数。那份语料的分布（话题、噪声、召回率，不含任何原话）见 [`docs/分布.md`](docs/分布.md)——里面有一个数解释了 `topic_prior` 为什么这么设。
 
 **和「带全历史」的对比：**
 
@@ -302,12 +308,23 @@ wake = (0.6 × arousal + 0.4 × heavy) × topic_prior[topic] × role_weight[role
 
 ## 自己验一遍
 
+macOS / Linux：
+
 ```bash
 python3 examples/gen-corpus.py --n 5000 --out /tmp/c.jsonl
 python3 extract.py --source /tmp/c.jsonl --tag demo --out /tmp/e.jsonl
 # 写一份 settings.json 指向 /tmp/e.jsonl，然后：
 python3 pick.py --config /tmp/s.json
 python3 recall.py --config /tmp/s.json "膝盖疼怎么办"
+```
+
+Windows（PowerShell）——注意 `python3` 换成 `python`，`/tmp` 不存在：
+
+```powershell
+python examples/gen-corpus.py --n 5000 --out "$env:TEMP\c.jsonl"
+python extract.py --source "$env:TEMP\c.jsonl" --tag demo --out "$env:TEMP\e.jsonl"
+python pick.py --config "$env:TEMP\s.json"
+python recall.py --config "$env:TEMP\s.json" "膝盖疼怎么办"
 ```
 
 `/tmp/s.json` 长这样：
@@ -329,6 +346,8 @@ python3 recall.py --config /tmp/s.json "膝盖疼怎么办"
 ## 依赖
 
 Python 3.8+。标准库。没有 `pip install` 这一步。
+
+Windows 上命令是 `python` 而不是 `python3`——后者常常指向 Microsoft Store 的占位符，一敲就弹商店。
 
 接进 DSH 的做法：把常驻 + 检索包成一个 OpenAI 兼容端点，新开一条通道，请求时拼 `system + 常驻 + 检索 + 这一句`，不写会话。
 
