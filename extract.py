@@ -55,7 +55,7 @@ TECH_CTX = re.compile(
 
 def load_settings(path: Path) -> dict:
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8-sig"))
     return {}
 
 

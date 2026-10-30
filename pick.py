@@ -82,7 +82,7 @@ def main():
     a = ap.parse_args()
 
     cfg_path = Path(a.config)
-    cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8-sig")) if cfg_path.exists() else {}
     base = cfg_path.parent if cfg_path.exists() else HERE
 
     events = Path(cfg.get("out", "events.jsonl"))
@@ -124,7 +124,9 @@ def main():
            "\n\n## 我说过的话\n" + "\n".join(a_lines) + "\n")
 
     out = Path(a.out or cfg.get("resident", "resident.md"))
-    out.write_text(doc, encoding="utf-8")
+    # 统一 LF：Windows 上 write_text 默认把 \n 写成 \r\n，文件字符数会和打印的对不上
+    with out.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(doc)
 
     print(f"字数 {len(doc)} / 预算 {budget}")
     print(f"对方 {len(u_lines)} 条 / {u_n} 字（锁定 {u_lock}）")

@@ -98,7 +98,7 @@ def main():
     cfg = {}
     cp = Path(a.config)
     if cp.exists():
-        cfg = json.loads(cp.read_text(encoding="utf-8"))
+        cfg = json.loads(cp.read_text(encoding="utf-8-sig"))
     base = cp.parent if cp.exists() else HERE
     events = Path(cfg.get("out", "events.jsonl"))
     if not events.is_absolute():

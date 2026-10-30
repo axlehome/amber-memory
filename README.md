@@ -159,8 +159,6 @@ user:   <resident.md>
 
 `prompts.md` 从 [`prompts.example.md`](prompts.example.md) 抄一份改就行。改它不用重跑 extract。
 
-`prompts.md` 从 [`prompts.example.md`](prompts.example.md) 抄一份改就行。改它不用重跑 extract。
-
 ---
 
 ## 引用计数（唯一有状态的机制）
@@ -334,6 +332,8 @@ python recall.py --config "$env:TEMP\s.json" "膝盖疼怎么办"
  "bump": "/tmp/b.json", "resident_budget": 30000,
  "share_user": 0.55, "share_assistant": 0.25, "tz_offset_hours": 8}
 ```
+
+Windows 版把 `/tmp` 换成 `$env:TEMP`，JSON 里反斜杠要写两个，例如 `"out": "$env:TEMP\\e.jsonl"`。
 
 三件事要自己对一遍：
 
