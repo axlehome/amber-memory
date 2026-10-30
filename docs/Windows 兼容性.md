@@ -20,7 +20,7 @@
 python tests/smoke.py
 ```
 
-三平台都应输出 `[ok] 三步跑通：300 条 → 常驻 542 字`，exit 0。
+三平台都应输出 `[ok] 三步跑通：300 条 → 常驻 1,576 字`，exit 0。
 
 CI 建议用矩阵跑 `tests/smoke.py`：ubuntu / windows / macos 各一遍，并额外跑一次 `PYTHONIOENCODING=utf-8`。
 

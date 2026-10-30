@@ -155,7 +155,8 @@ def iter_records(path: Path, tag: str, tz):
                     if r:
                         yield (tag,) + r
     else:
-        with path.open(encoding="utf-8") as f:
+        # utf-8-sig：记事本保存的 jsonl 常带 BOM，用 utf-8 读会让第一行解析失败、被静默丢掉
+        with path.open(encoding="utf-8-sig") as f:
             for i, line in enumerate(f):
                 r = parse(line, i)
                 if r:
@@ -178,7 +179,7 @@ def noise_reason(text: str) -> str:
         return "纯符号"
     if not CJK.search(text) and not re.search(r"[a-zA-Z]{3,}", text):
         return "无字"
-    if len(CJK.findall(text)) < 4:
+    if len(CJK.findall(text)) + len(re.findall(r"[A-Za-z]", text)) < 4:
         return "太短"
     if text.count("```") >= 2 or text.count("`") >= 6:
         return "代码块"
@@ -279,7 +280,7 @@ def main():
             n += 1
         by_src[s["tag"]] = n
 
-    rows.sort(key=lambda r: (r["time"], r["src"], r["seq"]))
+    rows.sort(key=lambda r: (r["time"] or 0, r["src"], r["seq"] or 0))
     out = Path(a.out or cfg.get("out", "events.jsonl"))
     if not out.is_absolute():
         out = cfg_base / out
