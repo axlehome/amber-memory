@@ -16,6 +16,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 
+# Windows 上 stdout 接管道时用本地代码页（CI 是 cp1252），直接 print 中文会 UnicodeEncodeError。
+# 控制台（tty）保持原样；管道统一成 utf-8。
+if not sys.stdout.isatty():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 def run(*args, **kw):
     # 父进程按 utf-8 解码，就必须让子进程也按 utf-8 输出；
