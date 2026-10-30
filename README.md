@@ -155,6 +155,28 @@ user:   <resident.md>
 
 `prompts.md` 从 [`prompts.example.md`](prompts.example.md) 抄一份改就行。改它不用重跑 extract。
 
+`prompts.md` 从 [`prompts.example.md`](prompts.example.md) 抄一份改就行。改它不用重跑 extract。
+
+---
+
+## 引用计数（唯一有状态的机制）
+
+`pick.py` 里有个「锁定块」：被 `bump.py` 记过引用的话，**永不淘汰**，预算再紧也不挤。
+
+为什么要有它——分高的和真被用到的，经常不是同一批。你以为重要的，可能一次没用过；某句不起眼的话，反倒被翻出来四回。
+
+```bash
+python3 bump.py --seq 12345        # 记一次（按 events 里的 seq 找）
+python3 bump.py --show             # 看记录
+python3 recall.py "问句" --bump     # 记检索返回的第一条
+```
+
+按文本 sha1 记，不按 seq——同一句话在两份数据里存了两遍，算同一条。
+
+`--bump` 默认关：一次捞四条全记，等于所有条目一起涨，区分就没了。
+
+**软肋：它是手动的。** 不敲就没有数据，`bump.json` 会一直空着，锁定块等于不存在。
+
 ---
 
 ## 实测

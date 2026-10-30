@@ -76,6 +76,8 @@ def main():
     ap.add_argument("--config", default=str(HERE / "settings.json"))
     ap.add_argument("-k", type=int, default=4)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--bump", action="store_true",
+                    help="把返回的第一条记一次引用（默认不记：一次记四条等于没区分）")
     a = ap.parse_args()
 
     cfg = {}
@@ -90,6 +92,17 @@ def main():
         raise SystemExit(f"找不到 {events}，先跑 extract.py")
 
     hits = Index(events).search(a.question, a.k)
+
+    if a.bump and hits:
+        import hashlib
+        bp = Path(cfg.get("bump", "bump.json"))
+        if not bp.is_absolute():
+            bp = base / bp
+        data = json.loads(bp.read_text(encoding="utf-8")) if bp.exists() else {}
+        k = hashlib.sha1(hits[0]["text"].encode("utf-8")).hexdigest()[:12]
+        data[k] = data.get(k, 0) + 1
+        bp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+
     if a.json:
         print(json.dumps(hits, ensure_ascii=False, indent=2))
     else:
