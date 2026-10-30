@@ -7,6 +7,7 @@
 全部用 examples/ 里的编造数据，不碰任何真实记录。
 """
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -17,8 +18,11 @@ PY = sys.executable
 
 
 def run(*args, **kw):
+    # 父进程按 utf-8 解码，就必须让子进程也按 utf-8 输出；
+    # 否则 Windows（locale 是 GBK/CP1252）上子进程写本地编码，这里会解成乱码。
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
     r = subprocess.run([PY, *args], cwd=ROOT, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", **kw)
+                       encoding="utf-8", errors="replace", env=env, **kw)
     if r.returncode != 0:
         print(f"[FAIL] {' '.join(args)}\n{(r.stderr or r.stdout)[-800:]}")
         sys.exit(1)

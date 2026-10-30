@@ -145,7 +145,9 @@ EXTRA = [
     "记下来吧，免得下次又忘",
     "反正也不急这一天",
     "等手上这摊收了我再弄",
+    "你要是有空，帮我看看这一步对不对",
     "今天先记在这儿",
+    "越拖越不想动",
 ]
 
 # 噪声：这些就是噪声本身，不追加任何句子
@@ -185,14 +187,15 @@ def main() -> None:
                 role = "user" if random.random() < 0.47 else "assistant"
                 if role == "user":
                     text = render(random.choice(spec["tpl"]), obj)
-                    if random.random() < 0.75:
-                        text += "。" + random.choice(EXTRA)
-                    if random.random() < 0.35:
-                        text += "。" + random.choice(EXTRA)
                 else:
                     text = random.choice(REPLY).replace("{t}", obj)
-                    if random.random() < 0.6:
+                    if random.random() < 0.4:
                         text += "。" + random.choice(FILL)
+                # 两种角色都追加：旧版就是这么做，只有 user 追加会让回复太短、全被 human 过滤掉
+                if random.random() < 0.75:
+                    text += "。" + random.choice(EXTRA)
+                if random.random() < 0.45:
+                    text += "。" + random.choice(EXTRA)
 
             now += random.randint(30_000, 900_000)
             f.write(json.dumps({"role": role, "text": text, "time": now}, ensure_ascii=False) + "\n")
