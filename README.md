@@ -42,7 +42,7 @@ python3 extract.py --source examples/sample-library.zip --tag demo --out /tmp/de
 
 ## 实测
 
-在一份 **5000 条 / 13.4 万字** 的语料上跑（`examples/gen-corpus.py` 生成，八个家常主题（做饭、养花、修车、记账、跑步、学英语、旅行、工作），固定种子，谁跑都一样）：
+在一份 **5000 条 / 13.4 万字** 的语料上跑——`examples/gen-corpus.py` 生成，八个家常主题（做饭、养花、修车、记账、跑步、学英语、旅行、工作），固定种子，谁跑都一样：
 
 | 指标 | 数值 |
 |---|---|
