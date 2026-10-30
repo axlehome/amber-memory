@@ -51,7 +51,7 @@ python3 extract.py --source examples/sample-library.zip --tag demo --out /tmp/de
 | 检索 | 每轮多几百 token |
 | 离线耗时 | 三步合计不到 3 秒 |
 
-真实使用里（一份 5,496 条、约两周的中文对话）常驻落在 22,185 字 / 约 1.4 万 token，可召回 683 条（12%）。同一量级。
+同一套参数在更大语料上跑，常驻稳定在两万字上下。
 
 **和「带全历史」的对比：**
 
