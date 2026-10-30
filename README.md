@@ -6,8 +6,6 @@
 
 不调模型、不联网、零 token、零依赖——只有规则和词表。
 
-> 琥珀不是「不会忘」。它是把活的东西封起来：能带走、能看，但不再活。
-
 <sub>**English** — amber compresses a long chat log into a fixed-size "resident" memory plus a tiny
 idf retriever, so every turn carries a constant ~16k tokens instead of the whole history. Rules only:
 no model calls, no embeddings, no network, no dependencies. Built for DSH; other harnesses convert
@@ -346,6 +344,8 @@ Python 3.8+。标准库。没有 `pip install` 这一步。
 
 ## 名字
 
-琥珀：树脂滴下来，把当时的东西封住。能带走、能看，但里面的虫子不会再动。
+琥珀里封着当时的东西，能带走、能看。
+
+但这里说的不是「封住就不再动」。它只是**能带走的那一份**——全部还在原处，一个字没少。
 
 不叫 memory、不叫 recall、不叫永不忘。那些词承诺太多。
